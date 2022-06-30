@@ -47,11 +47,12 @@ for ((i=1;i<=num_screenshots;i++)); do
     screencapture -m -x -R${capture_region} ${prefix}/${prefix}-$(printf '%04d' $i).png
 
     # Press page-down
-    cliclick kd:shift ku:shift kp:page-down
+    cliclick kd:shift ku:shift kp:space
 done
 
+# Convert to PDF (dash suffix to rise to top of default sort order)
 echo CAPTURE: Converting to PDF...
-convert ${prefix}/${prefix}-*.png ${prefix}/${prefix}.pdf
+convert ${prefix}/${prefix}-*.png ${prefix}/${prefix}-.pdf
 
 echo CAPTURE: Done.
-open ${prefix}/${prefix}.pdf
+open ${prefix}/${prefix}-.pdf
