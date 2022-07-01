@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# Settings
-num_screenshots=5
+# Number of screenshots passed as first argument (5 by default)
+num_screenshots=${1:-5}
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
