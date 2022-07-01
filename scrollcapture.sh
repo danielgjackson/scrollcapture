@@ -3,7 +3,6 @@ set -e
 
 # Settings
 num_screenshots=5
-capture_region=400,200,1400,1000
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
@@ -38,7 +37,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     capture () {
-        screencapture -m -x -R${capture_region} "$1"
+        screencapture -x -l$(./activewindowid.js 2>&1) "$1"
     }
 
     keypress () {
