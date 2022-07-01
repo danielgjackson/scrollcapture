@@ -1,14 +1,13 @@
 #!/bin/bash
 set -e
 
+#crop_top=0; crop_bottom=0; crop_left=0; crop_right=0;
+
+# Approximate sizes for MBP-15 Safari
+crop_top=182; crop_bottom=158; crop_left=115; crop_right=115;
+
 # Number of screenshots passed as first argument (5 by default)
 num_screenshots=${1:-5}
-
-# Crop sizes
-crop_top=0
-crop_bottom=0
-crop_left=0
-crop_right=0
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
@@ -54,7 +53,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         open "$1"
     }
 
-elif [[ -v $WINDOW_ID ]]; then
+elif [[ ! -n "$WINDOW_ID" ]]; then
     # X11
     echo "PLATFORM: X11"
 
@@ -131,7 +130,10 @@ fi
 # Capture loop
 prefix=capture-$(date '+%Y%m%d%H%M%S')
 echo CAPTURE: Session identifier: $prefix
+echo "...long wait before initial capture (10 s) -- please focus window to be captured..."
+sleep 10
 mkdir ${prefix}
+
 for ((i=1;i<=num_screenshots;i++)); do
     # Random delay between 4-8 seconds
     delay=$(printf "%d.%03d" $((RANDOM % 3 + 4)) $((RANDOM % 1000)))

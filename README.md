@@ -37,3 +37,9 @@ Afterwards, the images will be collated as pages into a single `.pdf` file.
 3. Quickly change the current focussed window back to your browser, and allow the screenshots to be taken.
 
 4. Afterwards, the script should automatically open the PDF archive of the screenshots.
+
+**IMPORTANT:** You will want to do an initial small test and verify the captured portion of the window, and the degree of scroll overlap.  You can adjust the cropping by editing the `scrollcapture.sh` file and changing the crop values at the start of the file, e.g.:
+
+```bash
+crop_top=182; crop_bottom=158; crop_left=115; crop_right=115;
+```
