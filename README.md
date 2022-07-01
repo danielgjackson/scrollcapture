@@ -1,12 +1,13 @@
 # Scroll Capture
 
-This contains a script `scrollcapture.sh`, designed to be run on *macOS* that will, for a given count of iterations (default 5):
+This is an assistive script designed to help a user to archive multiple screens from a website as pages in a PDF file.  As distinct from a "scrolling screenshots", this script should work even if the page only loads images on demand or otherwise "recycles" images that have scrolled off the screen.
 
-* a random delay (default 4-8 seconds)
-* a *Space* key press (this will scroll the browser down one page)
-* a capture of a specified screen region
+The shell script `scrollcapture.sh` will, for a given count of iterations (default 5):
 
-Each screen capture will be saved to a `.png` file.
+* pause for a random delay (default 4-8 seconds)
+* simulate a *Space* key press (this will scroll a browser down one page)
+* take a screenshot image capture of the current window, saved to a `.png` file.
+* crop the screenshot image by a specified amount.
 
 Afterwards, the images will be collated as pages into a single `.pdf` file.
 
@@ -15,24 +16,24 @@ Afterwards, the images will be collated as pages into a single `.pdf` file.
 
 1. Download: [`scrollcapture.sh`](https://raw.githubusercontent.com/danielgjackson/scrollcapture/main/scrollcapture.sh)
 
-2. Open: `Terminal.app`
+2. Open a terminal (*Terminal.app* on macOS or a `wsl` command prompt on Windows).
 
-3. If you do not already have it, [install *Homebrew*](https://brew.sh/)
-
-4. Install `imagemagick` and `cliclick`:
+3. Install [`imagemagick`](https://imagemagick.org/script/download.php) and, on macOS, also install `cliclick` and, on Windows, install [MiniCap](https://www.donationcoder.com/software/mouser/popular-apps/minicap).  e.g. On macOS, first [install *Homebrew*](https://brew.sh/), then you can install the required programs with:
 
     ```bash
     brew install cliclick imagemagick
     ```
 
-5. Change to your `Downloads` directory:
+## Usage
+
+1. Open your browser on the required page and adjust the size so that the Space key scrolls the desired amount.
+
+2. Open the Terminal and run the script.  Change `5` to the desired number of screenshots to take.  Adjust the path if it is not in your *Downloads* directory.  On macOS, you will be prompted to allow `Terminal.app` to control your computer and capture screenshots, and may need to re-open the terminal and re-run the script:
 
     ```bash
-    cd ~/Downloads
+    ~/Downloads/scrollcapture.sh 5
     ```
 
-6. Run (you will be prompted to allow `Terminal.app` to control your computer and capture screenshots, and may need to re-run it):
+3. Quickly change the current focussed window back to your browser, and allow the screenshots to be taken.
 
-     ```bash
-     ./scrollcapture.sh
-     ```
+4. Afterwards, the script should automatically open the PDF archive of the screenshots.

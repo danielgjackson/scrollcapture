@@ -4,6 +4,12 @@ set -e
 # Number of screenshots passed as first argument (5 by default)
 num_screenshots=${1:-5}
 
+# Crop sizes
+crop_top=0
+crop_bottom=0
+crop_left=0
+crop_right=0
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     echo "PLATFORM: macOS"
@@ -135,7 +141,10 @@ for ((i=1;i<=num_screenshots;i++)); do
     # Capture defined area of the screen
     png=${prefix}/${prefix}-$(printf '%04d' $i).png
     capture "$png"
- 
+
+    # Crop image
+    convert "$png" -gravity North -chop x${crop_top} -gravity South -chop x${crop_bottom} -gravity West -chop ${crop_left}x -gravity East -chop ${crop_right}x "$png"
+
     # Press space (scroll browser down a page, page-down appears to have intermittent issues, dummy shift down/up appears to fix an issue with only sending a single space)
     keypress
 done
