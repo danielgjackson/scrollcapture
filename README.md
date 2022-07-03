@@ -18,7 +18,13 @@ Afterwards, the images will be collated as pages into a single `.pdf` file.
 
 2. Open a terminal (*Terminal.app* on macOS or a `wsl` command prompt on Windows).
 
-3. Install [`imagemagick`](https://imagemagick.org/script/download.php) and, on macOS, also install `cliclick` and, on Windows, install [MiniCap](https://www.donationcoder.com/software/mouser/popular-apps/minicap).  e.g. On macOS, first [install *Homebrew*](https://brew.sh/), then you can install the required programs with:
+3. Set the script as executable (adjust the path if not in the `Downloads` directory):
+
+    ```bash
+    chmod +x ~/Downloads/scrollcapture.sh
+    ```
+
+4. Install [`imagemagick`](https://imagemagick.org/script/download.php) and, on macOS, also install `cliclick` and, on Windows, install [MiniCap](https://www.donationcoder.com/software/mouser/popular-apps/minicap).  e.g. On macOS, first [install *Homebrew*](https://brew.sh/), then you can install the required programs with:
 
     ```bash
     brew install cliclick imagemagick

@@ -12,6 +12,12 @@ num_screenshots=${1:-5}
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     echo "PLATFORM: macOS"
+    
+    if [[ ! -f "$(dirname "$0")/activewindowid.js" ]]
+    then
+        echo "ERROR: The companion script is missing:    activewindowid.js"
+        exit 1
+    fi
 
     if ! command -v cliclick &> /dev/null
     then
@@ -42,7 +48,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     capture () {
-        screencapture -x -l$(./activewindowid.js 2>&1) "$1"
+        screencapture -x -l$(/usr/bin/osascript -l JavaScript "$(dirname "$0")/activewindowid.js" 2>&1) "$1"
     }
 
     keypress () {
@@ -139,13 +145,15 @@ for ((i=1;i<=num_screenshots;i++)); do
     delay=$(printf "%d.%03d" $((RANDOM % 3 + 4)) $((RANDOM % 1000)))
     echo "CAPTURE: $i of $num_screenshots (delay $delay s)..."
     sleep $delay
+    pngBase=${prefix}/${prefix}-$(printf '%04d' $i)
 
     # Capture defined area of the screen
-    png=${prefix}/${prefix}-$(printf '%04d' $i).png
-    capture "$png"
+    pngOriginal=${pngBase}.original.png
+    capture "$pngOriginal"
 
     # Crop image
-    convert "$png" -gravity North -chop x${crop_top} -gravity South -chop x${crop_bottom} -gravity West -chop ${crop_left}x -gravity East -chop ${crop_right}x "$png"
+    pngCropped=${pngBase}.cropped.png
+    convert "$pngOriginal" -gravity North -chop x${crop_top} -gravity South -chop x${crop_bottom} -gravity West -chop ${crop_left}x -gravity East -chop ${crop_right}x "$pngCropped"
 
     # Press space (scroll browser down a page, page-down appears to have intermittent issues, dummy shift down/up appears to fix an issue with only sending a single space)
     keypress
@@ -153,7 +161,7 @@ done
 
 # Convert to PDF (dash suffix to rise to top of default sort order)
 echo CAPTURE: Converting to PDF...
-convert ${prefix}/${prefix}-*.png ${prefix}/${prefix}-.pdf
+convert "${prefix}/${prefix}-*.cropped.png" "${prefix}/${prefix}-.pdf"
 
 echo CAPTURE: Done.
 open_file "${prefix}/${prefix}-.pdf"
