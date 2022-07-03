@@ -14,7 +14,7 @@ Afterwards, the images will be collated as pages into a single `.pdf` file.
 
 ## Installation
 
-1. Download: [`scrollcapture.sh`](https://raw.githubusercontent.com/danielgjackson/scrollcapture/main/scrollcapture.sh)
+1. Download: [`scrollcapture.sh`](https://raw.githubusercontent.com/danielgjackson/scrollcapture/main/scrollcapture.sh). On macOS you will also need [`activewindowid.js`](https://raw.githubusercontent.com/danielgjackson/scrollcapture/main/activewindowid.js).
 
 2. Open a terminal (*Terminal.app* on macOS or a `wsl` command prompt on Windows).
 
