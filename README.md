@@ -44,7 +44,7 @@ Afterwards, the images will be collated as pages into a single `.pdf` file.
 
 4. Afterwards, the script should automatically open the PDF archive of the screenshots.
 
-**IMPORTANT:** You will want to do an initial small test and verify the captured portion of the window, and the degree of scroll overlap.  You can calculate the cropping by running the following (you must first download [`calibrate.html`](https://raw.githubusercontent.com/danielgjackson/scrollcapture/main/calibrate.html)):
+**IMPORTANT:** You will want to do an initial small test and verify the captured portion of the window, and the degree of scroll overlap.  You can calculate the cropping by running the following (you must first download [`calibrate.html`](https://raw.githubusercontent.com/danielgjackson/scrollcapture/main/calibrate.html) to the same location as the script):
 
 ```bash
 ~/Downloads/scrollcapture.sh --calibrate
