@@ -1,14 +1,6 @@
 #!/bin/bash
 set -e
 
-#crop_top=0; crop_bottom=0; crop_left=0; crop_right=0;
-
-# Approximate sizes for MBP-15 Safari
-crop_top=182; crop_bottom=158; crop_left=115; crop_right=115;
-
-# Number of screenshots passed as first argument (5 by default)
-num_screenshots=${1:-5}
-
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     echo "PLATFORM: macOS"
@@ -59,7 +51,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         open "$1"
     }
 
-elif [[ ! -n "$WINDOW_ID" ]]; then
+elif [[ ! -z "$WINDOW_ID" ]]; then
     # X11
     echo "PLATFORM: X11"
 
@@ -90,7 +82,7 @@ elif [[ ! -n "$WINDOW_ID" ]]; then
     }
 
     open_file () {
-        xdg-open "$1"
+        xdg-open "$1" &
     }
 
 elif grep -qi microsoft /proc/version; then
@@ -133,9 +125,71 @@ else
 fi
 
 
+# Cropping coordinate calibration
+if [ "$1" == "--calibrate" ]; then
+    echo "CAPTURE: Running calibrate mode."
+    [ -d calibrate ] || mkdir calibrate
+    pngBase=calibrate/calibrate-$(date '+%Y%m%d%H%M%S')
+
+    # Plain magenta in window client area
+    color=magenta
+    #open_file "data:text/html,%3Chtml/style=background:$color%3E"
+    open_file "$(dirname "$0")/calibrate.html"
+
+    echo "CAPTURE: Waiting for calibration screen..."
+    sleep 10
+
+    echo "CAPTURE: Capturing calibration screen..."
+    capture "${pngBase}.0.png"
+
+    echo "CAPTURE: Creating rotations..."
+    convert "${pngBase}.0.png" -rotate 90 "${pngBase}.90.png"
+    convert "${pngBase}.90.png" -rotate 90 "${pngBase}.180.png"
+    convert "${pngBase}.180.png" -rotate 90 "${pngBase}.270.png"
+
+    echo "CAPTURE: Checking calibration..."
+    test=$(compare -metric AE -subimage-search "${pngBase}.0.png" \( -size 1x1 xc:"$color" \) null: 2>&1 | tr -cs ".0-9\n" " "  | cut -d\  -f1)
+    if [[ "$test" != "0" ]]; then
+        echo "CAPTURE: Error, calibration value cound not be found: $color"
+        exit 1
+    fi
+
+    echo "CAPTURE: Calculating calibration values: left..."
+    crop_left=$(compare -metric AE -subimage-search "${pngBase}.0.png" \( -size 1x1 xc:"$color" \) null: 2>&1 | tr -cs ".0-9\n" " "  | cut -d\  -f2)
+    echo "CAPTURE: Calculating calibration values: bottom..."
+    crop_bottom=$(compare -metric AE -subimage-search "${pngBase}.90.png" \( -size 1x1 xc:"$color" \) null: 2>&1 | tr -cs ".0-9\n" " "  | cut -d\  -f2)
+    echo "CAPTURE: Calculating calibration values: right..."
+    crop_right=$(compare -metric AE -subimage-search "${pngBase}.180.png" \( -size 1x1 xc:"$color" \) null: 2>&1 | tr -cs ".0-9\n" " "  | cut -d\  -f2)
+    echo "CAPTURE: Calculating calibration values: top..."
+    crop_top=$(compare -metric AE -subimage-search "${pngBase}.270.png" \( -size 1x1 xc:"$color" \) null: 2>&1 | tr -cs ".0-9\n" " "  | cut -d\  -f2)
+
+    echo "CAPTURE: Cropping calibration screen..."
+    pngCropped=${pngBase}.cropped.png
+    convert "${pngBase}.0.png" -gravity North -chop x${crop_top} -gravity South -chop x${crop_bottom} -gravity West -chop ${crop_left}x -gravity East -chop ${crop_right}x "$pngCropped"
+
+    echo "CAPTURE: Cropping parameters calculated:"
+    echo "crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};"
+    echo "crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};" > "$(dirname "$0")/crop-params.generated.sh"
+    
+    exit 0
+fi
+
+
+# Crop parameters
+crop_top=0; crop_bottom=0; crop_left=0; crop_right=0;
+if [[ -f "$(dirname "$0")/crop-params.generated.sh" ]]; then
+    echo "CAPTURE: Loading generated crop parameters..."
+    source "$(dirname "$0")/crop-params.generated.sh"
+fi
+echo "CAPTURE: Cropping parameters used:"
+echo "crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};"
+
+# Number of screenshots passed as first argument (5 by default)
+num_screenshots=${1:-5}
+
 # Capture loop
 prefix=capture-$(date '+%Y%m%d%H%M%S')
-echo CAPTURE: Session identifier: $prefix
+echo "CAPTURE: Session identifier: $prefix"
 echo "...long wait before initial capture (10 s) -- please focus window to be captured..."
 sleep 10
 mkdir ${prefix}
