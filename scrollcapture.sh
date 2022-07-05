@@ -40,7 +40,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     capture () {
-        screencapture -x -l$(/usr/bin/osascript -l JavaScript "$(dirname "$0")/activewindowid.js" 2>&1) "$1"
+        info=$(/usr/bin/osascript -l JavaScript "$(dirname "$0")/activewindowid.js" 2>&1)
+        id=$(echo ${info} | cut -d ' ' -f 1)
+        screencapture -x -l$id "$1"
     }
 
     keypress () {
@@ -49,6 +51,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     open_file () {
         open "$1"
+    }
+
+    resize () {
+        info=$(/usr/bin/osascript -l JavaScript "$(dirname "$0")/activewindowid.js" $1 $2 2>&1)
+        w=$(echo ${info} | cut -d ' ' -f 4)
+        h=$(echo ${info} | cut -d ' ' -f 5)
+        echo "RESIZED: ($w, $h) to ($1 $2)"
     }
 
 elif [[ ! -z "$WINDOW_ID" ]]; then
@@ -85,6 +94,10 @@ elif [[ ! -z "$WINDOW_ID" ]]; then
         xdg-open "$1" &
     }
 
+    resize () {
+        echo "NOTE: Resize not yet implemented on X11: $1 $2"
+    }
+
 elif grep -qi microsoft /proc/version; then
     # WSL
     echo "PLATFORM: WSL"
@@ -116,6 +129,10 @@ elif grep -qi microsoft /proc/version; then
 
     open_file () {
         cmd.exe /c "start "" "$(wslpath -w .)/$1""
+    }
+
+    resize () {
+        echo "NOTE: Resize not yet implemented on WSL: $1 $2"
     }
 
 else
@@ -167,22 +184,23 @@ if [ "$1" == "--calibrate" ]; then
     pngCropped=${pngBase}.cropped.png
     convert "${pngBase}.0.png" -gravity North -chop x${crop_top} -gravity South -chop x${crop_bottom} -gravity West -chop ${crop_left}x -gravity East -chop ${crop_right}x "$pngCropped"
 
-    echo "CAPTURE: Cropping parameters calculated:"
-    echo "crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};"
-    echo "crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};" > "$(dirname "$0")/crop-params.generated.sh"
+    echo "CAPTURE: Resize/cropping parameters calculated:"
+    echo "resize_width=${resize_width}; resize_height=${resize_height}; crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};"
+    echo "resize_width=${resize_width}; resize_height=${resize_height}; crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};" > "$(dirname "$0")/crop-params.generated.txt"
     
     exit 0
 fi
 
 
-# Crop parameters
+# Window resize and crop parameters
+resize_width=0; resize_height=0; 
 crop_top=0; crop_bottom=0; crop_left=0; crop_right=0;
-if [[ -f "$(dirname "$0")/crop-params.generated.sh" ]]; then
+if [[ -f "$(dirname "$0")/crop-params.generated.txt" ]]; then
     echo "CAPTURE: Loading generated crop parameters..."
-    source "$(dirname "$0")/crop-params.generated.sh"
+    source "$(dirname "$0")/crop-params.generated.txt"
 fi
-echo "CAPTURE: Cropping parameters used:"
-echo "crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};"
+echo "CAPTURE: Resize/cropping parameters used:"
+echo "resize_width=${resize_width}; resize_height=${resize_height}; crop_top=${crop_top}; crop_bottom=${crop_bottom}; crop_left=${crop_left}; crop_right=${crop_right};"
 
 # Number of screenshots passed as first argument (5 by default)
 num_screenshots=${1:-5}
@@ -192,7 +210,12 @@ prefix=capture-$(date '+%Y%m%d%H%M%S')
 echo "CAPTURE: Session identifier: $prefix"
 echo "...long wait before initial capture (10 s) -- please focus window to be captured..."
 sleep 10
+# Resize window
+if [ $resize_width -gt 0 -a $resize_height -gt 0 ]; then
+    resize $resize_width $resize_height
+fi
 mkdir ${prefix}
+echo "CAPTURE: Session identifier: $prefix"
 
 for ((i=1;i<=num_screenshots;i++)); do
     # Random delay between 4-8 seconds

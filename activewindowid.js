@@ -1,6 +1,7 @@
 #!/usr/bin/osascript -l JavaScript
 
-//  screencapture -x -l$(./activewindowid.js 2>&1) test.png
+// Returns information from the frontmost window (including the window id).
+// Optionally, resizes the window to the specified width/height.
 
 ObjC.import('CoreGraphics');
 ObjC.import('Quartz');
@@ -11,32 +12,52 @@ Ref.prototype._nsObject = function () {
 	return $.unwrap($.CFMakeCollectable(this));
 }
 
-const kCGWindows = $.CGWindowListCopyWindowInfo($.kCGWindowListOptionOnScreenOnly | $.kCGWindowListExcludeDesktopElements, $.kCGWindowNull)._nsObject();
-const frontmost = kCGWindows.filter(w => w.kCGWindowIsOnscreen && w.kCGWindowLayer == 0);
+function run(args){
 
-let window = {
-	id: null,
-	pid: null,
-	name: null,
-	x: null,
-	y: null,
-	w: null,
-	h: null,
-}
+	const kCGWindows = $.CGWindowListCopyWindowInfo($.kCGWindowListOptionOnScreenOnly | $.kCGWindowListExcludeDesktopElements, $.kCGWindowNull)._nsObject();
+	const frontmost = kCGWindows.find(w => w.kCGWindowIsOnscreen && w.kCGWindowLayer == 0);
 
-if (frontmost.length > 0) {
-	const app = frontmost[0];
-	window = {
-		id: app.kCGWindowNumber,
-		pid: app.kCGWindowOwnerPID,
-		name: app.kCGWindowOwnerName,
-		x: app.kCGWindowBounds.X,
-		y: app.kCGWindowBounds.Y,
-		w: app.kCGWindowBounds.Width,
-		h: app.kCGWindowBounds.Height,
+	let window = {
+		id: null,
+		pid: null,
+		name: null,
+		x: null,
+		y: null,
+		w: null,
+		h: null,
 	}
-}
 
-if (window.id !== null) {
-	console.log(window.id);
+	if (frontmost) {
+		window = {
+			id: frontmost.kCGWindowNumber,
+			pid: frontmost.kCGWindowOwnerPID,
+			name: frontmost.kCGWindowOwnerName,
+			x: frontmost.kCGWindowBounds.X,
+			y: frontmost.kCGWindowBounds.Y,
+			w: frontmost.kCGWindowBounds.Width,
+			h: frontmost.kCGWindowBounds.Height,
+		};
+		
+		// id x y w h pid name
+		console.log("" + window.id + " " + window.x + " " + window.y + " " + window.w + " " + window.h + " " + window.pid + " " + window.name);
+
+		if (args.length >= 2) {
+			const width = parseInt(args[0]);
+			const height = parseInt(args[1]);
+			const app = Application(frontmost.kCGWindowOwnerPID);  // kCGWindowOwnerName
+			if (app.windows.length == 0) {
+				console.log("ERROR: Cannot find application to resize window.")
+			} else {
+				const win = app.windows[0];
+				win.bounds = {
+					x: window.x,
+					y: window.y,
+					width: width,
+					height: height,
+				};
+				//app.activate();
+			}
+		}
+	}
+
 }

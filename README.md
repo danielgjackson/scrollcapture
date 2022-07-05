@@ -72,10 +72,10 @@ You can automatically determine the cropping values by running the following:
 ~/scrollcapture/scrollcapture.sh --calibrate
 ```
 
-This will launch the default browser with a page entirely in magenta, automatically determine the cropping region, and save this to a generated file `crop-params.generated.sh`.  You can manually adjust the crop values at the start of the file, e.g.:
+This will launch the default browser with a page entirely in magenta, automatically determine the cropping region, and save this to a generated file `crop-params.generated.sh`.  You can manually adjust the crop values at the start of the file, and this includes `resize` parameters to set the window size (macOS-only at the moment), e.g.:
 
 ```bash
-crop_top=182; crop_bottom=158; crop_left=115; crop_right=115;
+resize_width=1280; resize_height=821; crop_top=182; crop_bottom=158; crop_left=115; crop_right=115;
 ```
 
 If you are using a non-default browser, first open a tab with the URL `data:text/html,<html/style=background:magenta>`, then switch focus to it as soon as the calibration program starts.
